@@ -98,7 +98,7 @@ class TriggerRefundArgs(BaseModel):
     def _reason_not_blank(cls, v: str) -> str:
         # "          " (10 spaces) satisfies min_length but is not a reason.
         if len(v.strip()) < 10:
-            raise ValueError("reason must contain at least 10 non-whitespace-padded characters")
+            raise ValueError("reason must be at least 10 characters after trimming surrounding whitespace")
         return v
 
 
@@ -106,9 +106,18 @@ class TriggerRefundArgs(BaseModel):
 # Mock data (stand-in for a real CRM / billing backend)
 # --------------------------------------------------------------------------- #
 CUSTOMERS: dict[str, dict[str, Any]] = {
-    "CUST-10001": {"name": "Asha Verma", "email": "asha.verma@example.com", "tier": "gold", "status": "active", "total_paid": 1250.00},
-    "CUST-10002": {"name": "Rohan Mehta", "email": "rohan.mehta@example.com", "tier": "silver", "status": "active", "total_paid": 480.50},
-    "CUST-10003": {"name": "Neha Singh", "email": "neha.singh@example.com", "tier": "bronze", "status": "suspended", "total_paid": 99.99},
+    "CUST-10001": {
+        "name": "Asha Verma", "email": "asha.verma@example.com",
+        "tier": "gold", "status": "active", "total_paid": 1250.00,
+    },
+    "CUST-10002": {
+        "name": "Rohan Mehta", "email": "rohan.mehta@example.com",
+        "tier": "silver", "status": "active", "total_paid": 480.50,
+    },
+    "CUST-10003": {
+        "name": "Neha Singh", "email": "neha.singh@example.com",
+        "tier": "bronze", "status": "suspended", "total_paid": 99.99,
+    },
 }
 REFUNDS: list[dict[str, Any]] = []
 _refund_lock = asyncio.Lock()
@@ -130,7 +139,8 @@ def _invalid_params(tool: str, exc: ValidationError) -> MCPError:
         {
             "field": ".".join(str(p) for p in err["loc"]) or "(arguments)",
             "type": err["type"],
-            "message": err["msg"],
+            # Pydantic prefixes custom validator messages with "Value error, "; that's noise for a client.
+            "message": err["msg"].removeprefix("Value error, "),
         }
         for err in exc.errors(include_input=False, include_url=False, include_context=False)
     ]
