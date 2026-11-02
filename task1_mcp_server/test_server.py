@@ -322,8 +322,7 @@ def _run_raw(stdin: bytes, wait_for_ids: set[int], script: Path = SERVER_PY) -> 
                 pending.discard(json.loads(line).get("id"))
             except ValueError:
                 pass  # non-JSON line: the purity assertions will report it
-        proc.stdin.close()
-        rest, err = proc.communicate(timeout=10)
+        rest, err = proc.communicate(timeout=10)  # communicate() closes stdin itself
     finally:
         watchdog.cancel()
         proc.kill()
