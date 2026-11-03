@@ -21,7 +21,6 @@ import json
 import logging
 import os
 import sys
-from typing import Any
 
 from starlette.applications import Starlette
 from starlette.requests import Request

@@ -1,6 +1,5 @@
 """End-to-end: client -> gateway (real HTTP) -> primary / secondary mock providers (real HTTP)."""
 import asyncio
-import json
 import os
 
 import httpx
